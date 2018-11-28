@@ -21,6 +21,7 @@
 #include "base/logging.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/process/process_info.h"
 #include "base/process/process_metrics_iocounters.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_restrictions.h"
@@ -93,6 +94,16 @@ void AtomBindings::BindTo(v8::Isolate* isolate, v8::Local<v8::Object> process) {
   mate::Dictionary dict(isolate, process);
   BindProcess(isolate, &dict, metrics_.get());
 
+  dict.SetMethod("crash", &AtomBindings::Crash);
+  dict.SetMethod("hang", &Hang);
+  dict.SetMethod("log", &Log);
+  dict.SetMethod("getHeapStatistics", &GetHeapStatistics);
+  dict.SetMethod("getCreationTime", &GetCreationTime);
+  dict.SetMethod("getSystemMemoryInfo", &GetSystemMemoryInfo);
+  dict.SetMethod("getProcessMemoryInfo", &GetProcessMemoryInfo);
+  dict.SetMethod("getCPUUsage", base::Bind(&AtomBindings::GetCPUUsage,
+                                           base::Unretained(metrics_.get())));
+  dict.SetMethod("getIOCounters", &GetIOCounters);
   dict.SetMethod("takeHeapSnapshot", &TakeHeapSnapshot);
 #if defined(OS_POSIX)
   dict.SetMethod("setFdLimit", &base::IncreaseFdLimitTo);
